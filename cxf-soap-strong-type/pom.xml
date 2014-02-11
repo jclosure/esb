@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>amd-poc-parent</artifactId>
+        <groupId>com.amd.poc</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cxf-soap-strong-type</artifactId>
+    <packaging>bundle</packaging>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-all</artifactId>
+            <version>4.1</version>
+            <!--<scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-blueprint</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-cxf</artifactId>
+            <version>${camel-version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.xml.bind</groupId>
+                    <artifactId>jaxb-impl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>geronimo-javamail_1.4_spec</artifactId>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- CXF wsdl2java generator, will plugin to the compile goal -->
+            <plugin>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-codegen-plugin</artifactId>
+                <version>${cxf-version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <sourceRoot>${basedir}/target/generated/src/main/java</sourceRoot>
+                            <wsdlOptions>
+                                <wsdlOption>
+                                    <wsdl>${basedir}/src/main/resources/etc/testService.wsdl</wsdl>
+                                </wsdlOption>
+                            </wsdlOptions>
+                        </configuration>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-maven-plugin</artifactId>
+                <version>${camel-version}</version>
+                <configuration>
+                    <!--todo:ceposta switch this back to use blueprint-->
+                    <useBlueprint>false</useBlueprint>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.3.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <manifestLocation>target/META-INF</manifestLocation>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                        <Import-Package>
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
