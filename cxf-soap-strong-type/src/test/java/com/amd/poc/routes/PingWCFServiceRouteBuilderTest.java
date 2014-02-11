@@ -16,12 +16,20 @@
  */
 package com.amd.poc.routes;
 
+import org.apache.camel.*;
 import org.apache.camel.builder.NotifyBuilder;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.cxf.common.message.CxfConstants;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
+import org.datacontract.schemas._2004._07.webapplication1.DataObject;
+import org.datacontract.schemas._2004._07.webapplication1.Receipt;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -30,13 +38,83 @@ import java.util.concurrent.TimeUnit;
 public class PingWCFServiceRouteBuilderTest extends CamelSpringTestSupport {
 
     @Test
-    public void testHitWebService() {
-        NotifyBuilder notifier = new NotifyBuilder(context).whenCompleted(10).create();
-        notifier.matches(60, TimeUnit.SECONDS);
+    public void testWCFHelloWorldService() throws InterruptedException {
+        MockEndpoint resultMockEndpoint = getMockEndpoint("mock:result");
+        resultMockEndpoint.expectedMessageCount(1);
+        resultMockEndpoint.message(0).body().startsWith("Hello World");
+
+        template.send("direct:helloworld", new Processor() {
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                exchange.getIn().setBody(new ArrayList());
+                exchange.getIn().setHeader(CxfConstants.OPERATION_NAME, "HelloWorld");
+                exchange.getIn().setHeader(CxfConstants.OPERATION_NAMESPACE, "http://tempuri.org/");
+            }
+        });
+
+        assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void testWCFHelloService() throws InterruptedException {
+        MockEndpoint resultMockEndpoint = getMockEndpoint("mock:result");
+        resultMockEndpoint.expectedMessageCount(1);
+        resultMockEndpoint.message(0).body().startsWith("Hello ceposta");
+
+        template.send("direct:helloworld", new Processor() {
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                ArrayList<String> params = new ArrayList<String>();
+                params.add("ceposta");
+                exchange.getIn().setBody(params);
+                exchange.getIn().setHeader(CxfConstants.OPERATION_NAME, "Hello");
+                exchange.getIn().setHeader(CxfConstants.OPERATION_NAMESPACE, "http://tempuri.org/");
+            }
+        });
+
+        assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void testWCFProcessService() throws InterruptedException {
+        MockEndpoint resultMockEndpoint = getMockEndpoint("mock:result");
+        resultMockEndpoint.expectedMessageCount(1);
+        resultMockEndpoint.message(0).body().in(new Predicate() {
+            @Override
+            public boolean matches(Exchange exchange) {
+                Object body = exchange.getIn().getBody(List.class).get(0);
+
+                return body instanceof Receipt &&
+                        ((Receipt) body).isSuccess();
+            }
+        });
+
+        template.send("direct:helloworld", new Processor() {
+            @Override
+            public void process(Exchange exchange) throws Exception {
+                ArrayList<Object> params = new ArrayList<Object>();
+                DataObject dataObject = new DataObject();
+                dataObject.setX003CIdX003EKBackingField("ceposta-123");
+                dataObject.setX003CNameX003EKBackingField("ceposta");
+                params.add(dataObject);
+                exchange.getIn().setBody(params);
+                exchange.getIn().setHeader(CxfConstants.OPERATION_NAME, "Process");
+                exchange.getIn().setHeader(CxfConstants.OPERATION_NAMESPACE, "http://tempuri.org/");
+            }
+        });
+
+        assertMockEndpointsSatisfied(5, TimeUnit.SECONDS);
     }
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("META-INF/spring/spring-context.xml");
+    }
+
+    @Override
+    protected RouteBuilder createRouteBuilder() throws Exception {
+        PingWCFServiceRouteBuilder rc = new PingWCFServiceRouteBuilder();
+        rc.setToEndpoint("mock:result");
+        return rc;
     }
 }

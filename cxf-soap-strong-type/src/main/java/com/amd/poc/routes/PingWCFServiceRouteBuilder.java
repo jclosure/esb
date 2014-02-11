@@ -24,12 +24,28 @@ import java.util.ArrayList;
  * @author <a href="http://www.christianposta.com/blog">Christian Posta</a>
  */
 public class PingWCFServiceRouteBuilder extends RouteBuilder {
+
+    private String toEndpoint;
+
     @Override
     public void configure() throws Exception {
-        from("timer:wsTimer?period=5000")
-                .log("about to send a request to the service..")
-                .setBody(constant(new ArrayList()))
-                .enrich("cxf:bean:wcfServiceEndpoint?defaultOperationName=HelloWorld&defaultOperationNamespace=http://tempuri.org/")
-                .log("got a reponse: ${body}, continuting on..");
+        from("direct:helloworld")
+                .log("about to send a request to the HelloWorld service..")
+                .enrich("cxf:bean:wcfServiceEndpoint")
+                .log("woohoo! got a reponse: ${body}")
+                .to(resolveToEndpoint());
+
+    }
+
+    public void setToEndpoint(String toEndpoint) {
+        this.toEndpoint = toEndpoint;
+    }
+
+    protected String resolveToEndpoint() {
+        if (toEndpoint == null) {
+            return "log:com.amd.poc.routes.PingWCFServiceRouteBuilder?showBody=true";
+        } else {
+            return toEndpoint;
+        }
     }
 }

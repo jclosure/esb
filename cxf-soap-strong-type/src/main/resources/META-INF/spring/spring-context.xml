@@ -7,11 +7,8 @@
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
               http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd ">
 
-    <camel:camelContext id="camelContext">
-        <camel:packageScan>
-            <camel:package>com.amd.poc.routes</camel:package>
-        </camel:packageScan>
-    </camel:camelContext>
+    <camel:camelContext id="camelContext" />
+
 
     <cxf:cxfEndpoint id="wcfServiceEndpoint"
                      address="http://amd.azurewebsites.net/WCFWebService1.svc"
