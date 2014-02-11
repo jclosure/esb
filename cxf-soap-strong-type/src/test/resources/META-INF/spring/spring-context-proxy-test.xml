@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:camel="http://camel.apache.org/schema/spring"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+              http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd ">
+
+    <camel:camelContext id="camelContext" />
+
+
+    <cxf:cxfEndpoint id="cxfProxy"
+                     address="http://localhost:8181/WCFWebService1.svc"
+                     serviceClass="org.tempuri.IWCFWebService1"
+                     serviceName="tns:WCFWebService1"
+                     endpointName="tns:BasicHttpBinding_IWCFWebService1"
+                     wsdlURL="classpath:etc/testService.wsdl"
+                     xmlns:tns="http://tempuri.org/">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+    </cxf:cxfEndpoint>
+
+    <cxf:cxfEndpoint id="backendService"
+                     address="http://amd.azurewebsites.net/WCFWebService1.svc"
+                     serviceClass="org.tempuri.IWCFWebService1"
+                     serviceName="tns:WCFWebService1"
+                     endpointName="tns:BasicHttpBinding_IWCFWebService1"
+                     wsdlURL="classpath:etc/testService.wsdl"
+                     xmlns:tns="http://tempuri.org/">
+        <cxf:properties>
+            <entry key="dataFormat" value="POJO"/>
+        </cxf:properties>
+    </cxf:cxfEndpoint>
+</beans>

@@ -17,7 +17,6 @@
 package com.amd.poc.routes;
 
 import org.apache.camel.*;
-import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.cxf.common.message.CxfConstants;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -35,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="http://www.christianposta.com/blog">Christian Posta</a>
  */
-public class PingWCFServiceRouteBuilderTest extends CamelSpringTestSupport {
+public class WCFServiceRouteBuilderTest extends CamelSpringTestSupport {
 
     @Test
     public void testWCFHelloWorldService() throws InterruptedException {
@@ -108,12 +107,12 @@ public class PingWCFServiceRouteBuilderTest extends CamelSpringTestSupport {
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("META-INF/spring/spring-context.xml");
+        return new ClassPathXmlApplicationContext("META-INF/spring/spring-context-test.xml");
     }
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        PingWCFServiceRouteBuilder rc = new PingWCFServiceRouteBuilder();
+        WCFServiceRouteBuilder rc = new WCFServiceRouteBuilder();
         rc.setToEndpoint("mock:result");
         return rc;
     }

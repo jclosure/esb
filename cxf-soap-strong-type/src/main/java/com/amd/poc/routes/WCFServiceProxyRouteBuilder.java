@@ -18,34 +18,41 @@ package com.amd.poc.routes;
 
 import org.apache.camel.builder.RouteBuilder;
 
-import java.util.ArrayList;
-
 /**
  * @author <a href="http://www.christianposta.com/blog">Christian Posta</a>
  */
-public class PingWCFServiceRouteBuilder extends RouteBuilder {
+public class WCFServiceProxyRouteBuilder extends RouteBuilder {
 
-    private String toEndpoint;
+    private String fromCxfProxyEndpoint;
+    private String toBackendService;
 
     @Override
     public void configure() throws Exception {
-        from("direct:helloworld")
-                .log("about to send a request to the HelloWorld service..")
-                .enrich("cxf:bean:wcfServiceEndpoint")
-                .log("woohoo! got a reponse: ${body}")
-                .to(resolveToEndpoint());
-
+        from(getFromCxfProxyEndpoint())
+                .log("received a request on the proxy")
+                .to(getToBackendService())
+                .log("response from backend: ${body}");
     }
 
-    public void setToEndpoint(String toEndpoint) {
-        this.toEndpoint = toEndpoint;
-    }
-
-    protected String resolveToEndpoint() {
-        if (toEndpoint == null) {
-            return "log:com.amd.poc.routes.PingWCFServiceRouteBuilder?showBody=true";
-        } else {
-            return toEndpoint;
+    public String getFromCxfProxyEndpoint() {
+        if (fromCxfProxyEndpoint == null) {
+            return "cxf:bean:cxfProxy";
         }
+        return fromCxfProxyEndpoint;
+    }
+
+    public void setFromCxfProxyEndpoint(String fromCxfProxyEndpoint) {
+        this.fromCxfProxyEndpoint = fromCxfProxyEndpoint;
+    }
+
+    public String getToBackendService() {
+        if (toBackendService == null) {
+            return "cxf:bean:backendService";
+        }
+        return toBackendService;
+    }
+
+    public void setToBackendService(String toBackendService) {
+        this.toBackendService = toBackendService;
     }
 }
