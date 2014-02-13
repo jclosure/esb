@@ -16,6 +16,7 @@
  */
 package com.amd.poc.routes;
 
+import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.Test;
@@ -25,24 +26,23 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="http://www.christianposta.com/blog">Christian Posta</a>
  */
-public class FileTransferRouteTest extends CamelTestSupport {
+public class FileTransferStandAloneTest extends CamelTestSupport {
 
     @Test
-    public void testFileTransfer() throws InterruptedException {
-        TimeUnit.SECONDS.sleep(60 * 60);
+    public void testSendFile() {
+        NotifyBuilder notifier = new NotifyBuilder(context).whenDone(1).create();
+        template.sendBody("direct:start", "hello, world");
+        notifier.matches(5, TimeUnit.SECONDS);
     }
-
 
     @Override
     protected RouteBuilder createRouteBuilder() throws Exception {
-        FileTransferRouteBuilder rc = new FileTransferRouteBuilder();
-        rc.setCompletedFilePath("file/complete");
-        rc.setFailedFilePath("file/failed");
-        rc.setLocalWorkingFilePath("target/file/working-cache");
-        rc.setWorkingFilePath("file/working");
-        rc.setPrivateKeyPassword("");
-        rc.setPrivateKeyPath("src/main/keys/id_esb");
-        rc.setRemoteSinkUri("log:org.apache.camel?showBody=true");
-        return rc;
+        return new RouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                from("direct:start")
+                        .to("sftp://cloudlinux06.amd.com/data?username=root&password=pass@word1");
+            }
+        };
     }
 }

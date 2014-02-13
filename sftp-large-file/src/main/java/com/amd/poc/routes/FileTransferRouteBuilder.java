@@ -27,6 +27,7 @@ public class FileTransferRouteBuilder extends RouteBuilder{
 
     // allow us to completely mock out the endpoint...
     private String ftpUri;
+    private String remoteSinkUri;
 
     private int filePollDelay = DEFAULT_POLL_DELAY;
     private String workingFilePath;
@@ -40,7 +41,20 @@ public class FileTransferRouteBuilder extends RouteBuilder{
     public void configure() throws Exception {
         from(getFtpUri())
                 // we can do some interesting things here...
-                .log("we got a file! ${header.CamelFileName}");
+                .log("we got a file! ${header.CamelFileName}")
+                .to(getRemoteSinkUri())
+                .log("completd send!");
+    }
+
+    private String getRemoteSinkUri() {
+        if (this.remoteSinkUri == null) {
+            return "sftp://cloudlinux06.amd.com/data?username=root&password=pass@word1";
+        }
+        return remoteSinkUri;
+    }
+
+    public void setRemoteSinkUri(String remoteSinkUri) {
+        this.remoteSinkUri = remoteSinkUri;
     }
 
     public String getFtpUri() {
@@ -54,17 +68,18 @@ public class FileTransferRouteBuilder extends RouteBuilder{
 
         return "sftp://root@cloudlinux04.amd.com/data"
                 + "?delay=" + filePollDelay * 1000
-                + "&preMove=" + workingFilePath
+//                + "&preMove=" + workingFilePath
                 + "&move=" + completedFilePath
                 + "&moveFailed=" + failedFilePath
                 + "&privateKeyFile=" + privateKeyPath
                 + "&privateKeyFilePassphrase=" + privateKeyPassword
                 + "&localWorkDirectory=" + localWorkingFilePath
                 // let's grab only one file at a time.. these could be large
-                + "&maxMessagesPerPoll=1"
+//                + "&antInclude="
+//                + "&maxMessagesPerPoll=1"
                 + "&eagerMaxMessagesPerPoll=true"
-                + "&binary=true"
-                + "&noop=true";
+                + "&recursive=true"
+                + "&binary=true";
     }
 
     public void setFtpUri(String ftpUri) {
